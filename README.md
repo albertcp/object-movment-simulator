@@ -47,6 +47,17 @@ docker run -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix object-movement-
 .venv/bin/mypy --strict .
 ```
 
+## Future Improvements
+
+- **Batch object creation** — Allow defining and spawning multiple moving objects at once
+- **Podman support** — Use Podman as an alternative container runtime for running the app
+- **Persistent simulation state** — Save and load simulation configurations (waypoints, objects, state)
+- **Real-time speed controls** — Slider or input to adjust simulation speed during playback
+- **Object collision detection** — Detect and flag when objects intersect during movement
+- **Waypoint snap-to-grid** — Improve precision when placing waypoints on the canvas
+- **Headless mode** — Run the simulation without a display, outputting only to adapters
+- **WebSocket adapter** — Replace the placeholder `NetworkAdapter` with a real WebSocket implementation
+
 ## Dependencies
 
 - Python 3.9+
