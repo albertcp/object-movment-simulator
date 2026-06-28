@@ -39,7 +39,7 @@ docker run -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix object-movement-
 .venv/bin/pytest --cov=.
 ```
 
-95 tests, 91% coverage. All checks pass:
+101 tests, 91% coverage. All checks pass:
 
 ```bash
 .venv/bin/ruff check .
@@ -49,7 +49,6 @@ docker run -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix object-movement-
 
 ## Future Improvements
 
-- **Batch object creation** — Allow defining and spawning multiple moving objects at once
 - **Podman support** — Use Podman as an alternative container runtime for running the app
 - **Persistent simulation state** — Save and load simulation configurations (waypoints, objects, state)
 - **Real-time speed controls** — Slider or input to adjust simulation speed during playback

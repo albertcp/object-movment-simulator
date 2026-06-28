@@ -13,6 +13,23 @@ def _mock_pygame_init() -> Iterator[None]:
         yield
 
 
+@pytest.fixture(autouse=True)
+def _mock_pygame_font() -> Iterator[None]:
+    """Replace pygame.font (MissingModule) with a working mock."""
+    mock_font_mod = MagicMock()
+    mock_font_mod.SysFont.return_value = MagicMock()
+    with patch.object(pygame, "font", mock_font_mod):
+        yield
+
+
+@pytest.fixture(autouse=True)
+def _reset_object_counter() -> None:
+    """Reset the UIPanel class-level object counter before each test."""
+    from controller.ui import UIPanel
+
+    UIPanel._object_counter = 0
+
+
 @pytest.fixture
 def mock_surface() -> MagicMock:
     surface = MagicMock(spec=pygame.Surface)

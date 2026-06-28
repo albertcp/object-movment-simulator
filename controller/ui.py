@@ -42,7 +42,7 @@ class UIPanel:
         self._font = pygame.font.SysFont("monospace", FONT_SIZE)
         btn_x = 10
         btn_y = 10
-        self._add_btn = Button(btn_x, btn_y, "Add Contact")
+        self._add_btn = Button(btn_x, btn_y, "Add object")
         self._play_btn = Button(btn_x, btn_y + 50, "Play")
         self._reset_btn = Button(btn_x, btn_y + 100, "Reset")
         self._buttons = [self._add_btn, self._play_btn, self._reset_btn]
@@ -138,6 +138,7 @@ class UIPanel:
                 return None
             if self._placing and self._pending_waypoints:
                 obj = self._finish_object()
+                self._pending_waypoints.clear()
                 self._placing = False
                 return ("add_object", obj)
             self._placing = not self._placing
@@ -171,6 +172,7 @@ class UIPanel:
     def finish_drawing(self) -> AddObjectResult | None:
         if self._pending_waypoints:
             obj = self._finish_object()
+            self._pending_waypoints.clear()
             self._placing = False
             return ("add_object", obj)
         self._placing = False

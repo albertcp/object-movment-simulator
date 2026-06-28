@@ -52,9 +52,14 @@ docker build -t object-movement-sim . && docker run -e DISPLAY=$DISPLAY -v /tmp/
 | `Dockerfile` | Container image for running the app |
 
 ## Rules
-
+The agent must follow the following rules on each task:
 1. Always update `todo.md` when implementing a task
 2. Always update `README.md` when a task is completed
 2.1. Maintain README.md file up to date with last changes
 3. Always update `requirements.txt` if a new dependency is added
 4. Update todo sidebar on every change
+5. When specs are implemented via `specs` folder, you must follow the following rules:
+5.1. You must generate a `todo.md` file registeting all tasks that need to be done for the specification requested. 
+5.2. This `todo.md` file needs to be generated on the same folder. And these steps are mandatory
+5.3. After all `todo.md` tasks are finished, move spec_n folder into `done` folder.
+6. Please, request permission to installed any package or installed something

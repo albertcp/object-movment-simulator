@@ -27,7 +27,6 @@ def app(engine: SimulationEngine) -> App:
     with (
         patch("pygame.display.set_mode", return_value=MagicMock(spec=pygame.Surface)),
         patch("pygame.display.set_caption"),
-        patch("pygame.font.SysFont", return_value=MagicMock()),
     ):
         return App(engine)
 
@@ -95,7 +94,6 @@ class TestApp:
         with (
             patch("pygame.display.set_mode", return_value=MagicMock(spec=pygame.Surface)),
             patch("pygame.display.set_caption"),
-            patch("pygame.font.SysFont", return_value=MagicMock()),
         ):
             empty_app = App(empty_engine)
         index = empty_app._hit_test_object((50, 50))
@@ -119,6 +117,52 @@ class TestApp:
         app._handle_event(event)
         assert len(app._ui.pending_waypoints) == 1
 
+    def test_add_object_button_creates_engine_object(self, app: App) -> None:
+        # Enter placing mode and add waypoints
+        app._ui._placing = True
+        app._ui.add_waypoint(Position(x=10, y=10))
+        app._ui.add_waypoint(Position(x=100, y=100))
+        app._ui.add_waypoint(Position(x=200, y=200))
+        assert len(app._engine.state.objects) == 1  # original fixture object
+
+        # Click the Add object button (panel x=15, y=20)
+        event = pygame.event.Event(pygame.MOUSEBUTTONDOWN, {"button": 1, "pos": (15, 20)})
+        app._handle_event(event)
+        assert len(app._engine.state.objects) == 2
+        added = app._engine.state.objects[1]
+        assert added.id == "Object-1"
+        assert len(added.path.waypoints) == 3
+
+    def test_multiple_add_object_clicks_create_multiple_objects(self, app: App) -> None:
+        assert len(app._engine.state.objects) == 1  # original fixture object
+
+        # Add first object
+        app._ui._placing = True
+        app._ui.add_waypoint(Position(x=0, y=0))
+        app._ui.add_waypoint(Position(x=50, y=50))
+        event1 = pygame.event.Event(pygame.MOUSEBUTTONDOWN, {"button": 1, "pos": (15, 20)})
+        app._handle_event(event1)
+        assert len(app._engine.state.objects) == 2
+
+        # Add second object
+        app._ui._placing = False
+        event_enter = pygame.event.Event(pygame.MOUSEBUTTONDOWN, {"button": 1, "pos": (15, 20)})
+        app._handle_event(event_enter)  # enters placing mode
+        app._ui.add_waypoint(Position(x=100, y=100))
+        app._ui.add_waypoint(Position(x=200, y=200))
+        app._ui.add_waypoint(Position(x=300, y=300))
+        event2 = pygame.event.Event(pygame.MOUSEBUTTONDOWN, {"button": 1, "pos": (15, 20)})
+        app._handle_event(event2)
+        assert len(app._engine.state.objects) == 3
+
+        # Verify both new objects with correct IDs
+        obj1 = app._engine.state.objects[1]
+        obj2 = app._engine.state.objects[2]
+        assert obj1.id == "Object-1"
+        assert obj2.id == "Object-2"
+        assert len(obj1.path.waypoints) == 2
+        assert len(obj2.path.waypoints) == 3
+
     def test_update_sends_messages(self, app: App) -> None:
         mock_adapter = MagicMock()
         app._adapters = [mock_adapter]
@@ -137,16 +181,14 @@ class TestApp:
         app._update(0.5)
         assert app._engine.state.objects[0].current_position.x == 50.0
 
-    @patch("pygame.font.SysFont", return_value=MagicMock())
-    def test_draw_complete_overlay(self, mock_font: MagicMock, app: App) -> None:
+    def test_draw_complete_overlay(self, app: App) -> None:
         app._sim_complete = True
         app._draw_complete_overlay()
 
     @patch("pygame.draw.circle")
     @patch("pygame.draw.lines")
-    @patch("pygame.font.SysFont")
     def test_draw_object_path(
-        self, mock_font: MagicMock, mock_lines: MagicMock, mock_circle: MagicMock, app: App
+        self, mock_lines: MagicMock, mock_circle: MagicMock, app: App
     ) -> None:
         obj = Object(
             id="multi",
@@ -157,8 +199,7 @@ class TestApp:
         app._draw_object_path(obj)
 
     @patch("pygame.draw.circle")
-    @patch("pygame.font.SysFont")
-    def test_draw_object(self, mock_font: MagicMock, mock_circle: MagicMock, app: App) -> None:
+    def test_draw_object(self, mock_circle: MagicMock, app: App) -> None:
         obj = Object(
             id="draw-test",
             path=Path(waypoints=[Position(x=50, y=50)]),
@@ -168,10 +209,7 @@ class TestApp:
         app._draw_object(obj, 0)
 
     @patch("pygame.draw.circle")
-    @patch("pygame.font.SysFont")
-    def test_draw_object_arrived(
-        self, mock_font: MagicMock, mock_circle: MagicMock, app: App
-    ) -> None:
+    def test_draw_object_arrived(self, mock_circle: MagicMock, app: App) -> None:
         obj = Object(
             id="arrived-test",
             path=Path(waypoints=[Position(x=100, y=100)]),
@@ -182,10 +220,7 @@ class TestApp:
         app._draw_object(obj, 0)
 
     @patch("pygame.draw.circle")
-    @patch("pygame.font.SysFont")
-    def test_draw_object_selected(
-        self, mock_font: MagicMock, mock_circle: MagicMock, app: App
-    ) -> None:
+    def test_draw_object_selected(self, mock_circle: MagicMock, app: App) -> None:
         app._selected_index = 0
         obj = app._engine.state.objects[0]
         app._draw_object(obj, 0)
