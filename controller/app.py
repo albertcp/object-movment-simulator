@@ -66,6 +66,27 @@ class App:
         sys.exit()
 
     def _handle_event(self, event: pygame.event.Event) -> None:
+        # Speed editing mode: intercept keyboard events
+        if self._ui.editing_speed and event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RETURN:
+                speed = self._ui.confirm_speed_edit()
+                if speed is not None and self._selected_index is not None:
+                    state_objects = list(self._engine.state.objects)
+                    if 0 <= self._selected_index < len(state_objects):
+                        updated_obj = state_objects[self._selected_index].model_copy()
+                        updated_obj.speed = speed
+                        state_objects[self._selected_index] = updated_obj
+                        self._engine = SimulationEngine(state_objects)
+            elif event.key == pygame.K_ESCAPE:
+                self._ui.cancel_speed_edit()
+            elif event.key == pygame.K_BACKSPACE:
+                self._ui.speed_input_backspace()
+            else:
+                # Route printable characters to speed input
+                if event.unicode and event.unicode.isprintable():
+                    self._ui.add_speed_input_char(event.unicode)
+            return  # Consume keyboard events during speed editing
+
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 state = self._engine.state
@@ -177,6 +198,7 @@ class App:
         )
         self._ui.sync_state(state.running, state.paused, complete=self._sim_complete)
         self._ui.set_selected_object(selected)
+        self._ui.set_objects(state.objects)
         self._ui.draw(self._screen)
 
     def _draw_complete_overlay(self) -> None:

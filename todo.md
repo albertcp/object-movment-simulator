@@ -65,3 +65,5 @@
 - [x] Add `Dockerfile` and `.dockerignore` for containerized execution
 - [x] Rename `Contact` → `Object`, `ContactState` → `ObjectState` across all source and test files
 - [x] Spec 1 — "Add object" button can be pressed multiple times to add multiple objects (6 new tests, 101 total)
+- [x] Spec 2 — Edit object speed via a speed editing button and popup (32 new tests, 133 total)
+- [x] Spec 3 — GUI layout: button order, status below buttons, all-objects data display (6 new tests, 139 total)

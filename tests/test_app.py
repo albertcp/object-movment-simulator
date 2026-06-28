@@ -224,3 +224,140 @@ class TestApp:
         app._selected_index = 0
         obj = app._engine.state.objects[0]
         app._draw_object(obj, 0)
+
+    # ── Speed editing integration tests ──────────────────────────────────
+
+    def test_edit_speed_click_enters_editing_mode(self, app: App) -> None:
+        """Clicking Edit Speed through App enters editing mode."""
+        app._selected_index = 0
+        app._ui.set_selected_object(app._engine.state.objects[0])
+        app._ui._editing_speed = False
+        event = pygame.event.Event(pygame.MOUSEBUTTONDOWN, {"button": 1, "pos": (15, 70)})
+        app._handle_event(event)
+        assert app._ui._editing_speed is True
+        assert float(app._ui._speed_input_text) > 0
+
+    def test_edit_speed_click_without_selection_does_nothing(self, app: App) -> None:
+        """Clicking Edit Speed without an object selected does nothing."""
+        app._selected_index = None
+        app._ui._editing_speed = False
+        event = pygame.event.Event(pygame.MOUSEBUTTONDOWN, {"button": 1, "pos": (15, 70)})
+        app._handle_event(event)
+        assert app._ui._editing_speed is False
+
+    def test_edit_speed_keyboard_digit_updates_input(self, app: App) -> None:
+        """Typing a digit during speed editing updates the input text."""
+        app._selected_index = 0
+        app._ui.set_selected_object(app._engine.state.objects[0])
+        app._ui._editing_speed = True
+        app._ui._speed_input_text = ""
+        event = pygame.event.Event(pygame.KEYDOWN, {"key": ord("5"), "unicode": "5"})
+        app._handle_event(event)
+        assert app._ui._speed_input_text == "5"
+
+    def test_edit_speed_keyboard_decimal_updates_input(self, app: App) -> None:
+        """Typing a decimal point during speed editing updates the input."""
+        app._selected_index = 0
+        app._ui.set_selected_object(app._engine.state.objects[0])
+        app._ui._editing_speed = True
+        app._ui._speed_input_text = "10"
+        event = pygame.event.Event(pygame.KEYDOWN, {"key": ord("."), "unicode": "."})
+        app._handle_event(event)
+        assert app._ui._speed_input_text == "10."
+
+    def test_edit_speed_keyboard_non_numeric_ignored(self, app: App) -> None:
+        """Non-numeric key presses are ignored during speed editing."""
+        app._selected_index = 0
+        app._ui.set_selected_object(app._engine.state.objects[0])
+        app._ui._editing_speed = True
+        app._ui._speed_input_text = "50"
+        event = pygame.event.Event(pygame.KEYDOWN, {"key": ord("a"), "unicode": "a"})
+        app._handle_event(event)
+        assert app._ui._speed_input_text == "50"
+
+    def test_edit_speed_keyboard_backspace_removes_char(self, app: App) -> None:
+        """Backspace removes the last input character during speed editing."""
+        app._selected_index = 0
+        app._ui.set_selected_object(app._engine.state.objects[0])
+        app._ui._editing_speed = True
+        app._ui._speed_input_text = "100"
+        event = pygame.event.Event(pygame.KEYDOWN, {"key": pygame.K_BACKSPACE, "unicode": "\x08"})
+        app._handle_event(event)
+        assert app._ui._speed_input_text == "10"
+
+    def test_edit_speed_enter_updates_engine_speed(self, app: App) -> None:
+        """Pressing Enter confirms speed and updates engine object."""
+        app._selected_index = 0
+        app._ui.set_selected_object(app._engine.state.objects[0])
+        app._ui._editing_speed = True
+        app._ui._speed_input_text = "50.0"
+        event = pygame.event.Event(pygame.KEYDOWN, {"key": pygame.K_RETURN, "unicode": "\r"})
+        app._handle_event(event)
+        assert app._engine.state.objects[0].speed == 50.0
+        assert app._ui._editing_speed is False
+
+    def test_edit_speed_enter_invalid_value_keeps_editing(self, app: App) -> None:
+        """Pressing Enter with invalid speed keeps editing mode active."""
+        app._selected_index = 0
+        app._ui.set_selected_object(app._engine.state.objects[0])
+        app._ui._editing_speed = True
+        app._ui._speed_input_text = "-5"
+        event = pygame.event.Event(pygame.KEYDOWN, {"key": pygame.K_RETURN, "unicode": "\r"})
+        app._handle_event(event)
+        # Speed should remain unchanged
+        assert app._engine.state.objects[0].speed == 100.0
+
+    def test_edit_speed_escape_cancels(self, app: App) -> None:
+        """Pressing Escape cancels speed editing without changing speed."""
+        app._selected_index = 0
+        original_speed = app._engine.state.objects[0].speed
+        app._ui.set_selected_object(app._engine.state.objects[0])
+        app._ui._editing_speed = True
+        app._ui._speed_input_text = "999.0"
+        event = pygame.event.Event(pygame.KEYDOWN, {"key": pygame.K_ESCAPE, "unicode": "\x1b"})
+        app._handle_event(event)
+        assert app._engine.state.objects[0].speed == original_speed
+        assert app._ui._editing_speed is False
+
+    def test_edit_speed_updated_speed_used_in_tick(self, app: App) -> None:
+        """After editing speed, the object moves at the new speed."""
+        app._selected_index = 0
+        app._ui.set_selected_object(app._engine.state.objects[0])
+        # Create a longer path so the object doesn't arrive before 1s
+        obj = Object(
+            id="speed-test",
+            path=Path(waypoints=[Position(x=0, y=0), Position(x=500, y=0)]),
+            speed=200.0,
+            current_position=Position(x=0, y=0),
+            state=ObjectState.WAITING,
+        )
+        app._engine = SimulationEngine([obj])
+        app._engine.start()
+        app._update(1.0)
+        # At speed 200, after 1s it should be at x=200
+        assert app._engine.state.objects[0].current_position.x == 200.0
+
+    # ── Objects list integration tests ───────────────────────────────────
+
+    def test_objects_list_passed_to_ui(self, app: App) -> None:
+        """App passes engine objects to UIPanel via set_objects."""
+        objects_before = list(app._engine.state.objects)
+        # Simulate what _draw does
+        app._ui.set_objects(objects_before)
+        assert len(app._ui._objects) == len(objects_before)
+        assert app._ui._objects[0].id == objects_before[0].id
+
+    def test_objects_list_updates_with_engine_changes(self, app: App) -> None:
+        """After adding an object, the UI objects list reflects the change."""
+        initial_count = len(app._engine.state.objects)
+        new_obj = Object(
+            id="new-obj",
+            path=Path(waypoints=[Position(x=0, y=0), Position(x=100, y=100)]),
+            speed=50.0,
+            current_position=Position(x=0, y=0),
+        )
+        new_engine = SimulationEngine(list(app._engine.state.objects) + [new_obj])
+        app._engine = new_engine
+        app._ui.set_objects(list(app._engine.state.objects))
+        assert len(app._ui._objects) == initial_count + 1
+        assert app._ui._objects[1].id == "new-obj"

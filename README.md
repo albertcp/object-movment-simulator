@@ -35,16 +35,13 @@ docker run -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix object-movement-
 
 ## Tests
 
-```bash
-.venv/bin/pytest --cov=.
-```
-
-101 tests, 91% coverage. All checks pass:
+139 tests, 91% coverage. See [`tests.md`](tests.md) for the full test suite documentation.
 
 ```bash
-.venv/bin/ruff check .
-.venv/bin/black --check .
-.venv/bin/mypy --strict .
+.venv/bin/pytest --cov=.        # full suite with coverage
+.venv/bin/ruff check .          # linting
+.venv/bin/black --check .       # formatting
+.venv/bin/mypy --strict .       # static types
 ```
 
 ## Future Improvements
