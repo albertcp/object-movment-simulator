@@ -119,7 +119,13 @@ class App:
                 result = self._ui.handle_click(event.pos)
                 if result == "play":
                     self._sim_complete = False
-                    self._engine.start()
+                    state = self._engine.state
+                    if not state.running:
+                        self._engine.start()
+                    elif state.paused:
+                        self._engine.resume()
+                    else:
+                        self._engine.pause()
                 elif result == "reset":
                     self._sim_complete = False
                     self._engine.reset()

@@ -99,25 +99,22 @@ class UIPanel:
                 active = btn is self._add_btn and self._placing
                 btn.draw(surface, self._font, active=active)
 
-        # Simulation status (below all buttons)
+        # Simulation status (below all buttons) — always in green
         status_y = 215
+        status_color = (100, 220, 100)
         if self._sim_complete:
-            status_color = (100, 220, 100)
             status_text = "Complete!"
         elif self._sim_running and not self._sim_paused:
-            status_color = (100, 220, 100)
             status_text = "Running"
         elif self._sim_paused:
-            status_color = (220, 220, 100)
             status_text = "Paused"
         else:
-            status_color = (180, 180, 180)
             status_text = "Stopped"
         status = self._font.render(status_text, True, status_color)
         surface.blit(status, (15, status_y))
 
         # All objects data (below buttons and state)
-        if self._objects and not self._placing:
+        if self._objects:
             info_y = 245
             section = self._font.render("Objects:", True, (180, 220, 180))
             surface.blit(section, (15, info_y))
@@ -137,16 +134,17 @@ class UIPanel:
                     info_y += 17
                 info_y += 3
 
+        # Placing-mode help text at the BOTTOM of the left panel
         if self._placing:
-            y_offset = 190
+            bottom_y = surface.get_height() - 100
             info = self._font.render(f"Points: {len(self._pending_waypoints)}", True, BUTTON_TEXT)
-            surface.blit(info, (15, y_offset))
+            surface.blit(info, (15, bottom_y))
             hint = self._font.render("Click canvas to add", True, (140, 140, 140))
-            surface.blit(hint, (15, y_offset + 20))
+            surface.blit(hint, (15, bottom_y + 20))
             hint2 = self._font.render("Right-click to finish", True, (140, 140, 140))
-            surface.blit(hint2, (15, y_offset + 40))
+            surface.blit(hint2, (15, bottom_y + 40))
             hint3 = self._font.render("Backspace to undo", True, (140, 140, 140))
-            surface.blit(hint3, (15, y_offset + 60))
+            surface.blit(hint3, (15, bottom_y + 60))
 
         # Speed editing popup
         if self._editing_speed:

@@ -1,13 +1,13 @@
-# BDD Specification — GUI Layout and Object Data Display
+# BDD Specification — GUI Layout and Object Data Display (v2)
 
-> Derived from `spec.md` — Requirement 3
+> Derived from `spec.md` — Requirement 3 (modified)
 
 ---
 
 ```gherkin
 Feature: GUI Layout and Object Data Display
   As an operator
-  I want a clearly organized control panel with buttons in a fixed order, a simulation status indicator, and a list of all objects with their data
+  I want a clearly organized control panel with buttons in a fixed order, help text at the bottom of the panel, a simulation status indicator always in green, and a list of all objects with their data
   So that I can efficiently manage and monitor the simulation
 
   Background:
@@ -27,11 +27,21 @@ Feature: GUI Layout and Object Data Display
     When the operator clicks on an object to select it
     Then the Edit Speed button becomes enabled
 
-  Scenario: Simulation status is displayed below all buttons
+  Scenario: Simulation status is always displayed in green text below all buttons
     Given the simulation has not been started
-    Then the status text "Stopped" appears below all buttons in the panel
+    Then the status text "Stopped" appears below all buttons in green
     When the operator starts the simulation
-    Then the status text changes to "Running" in green below all buttons
+    Then the status text changes to "Running" still in green below all buttons
+    When the operator pauses the simulation
+    Then the status text changes to "Paused" still in green
+    When the simulation finishes
+    Then the status text shows "Complete!" in green
+
+  Scenario: Help text for Add Object appears at the bottom of the left panel
+    Given the operator is not in placing mode
+    Then no help text is shown at the bottom of the panel
+    When the operator clicks Add Object to enter placing mode
+    Then help text appears at the bottom of the left side panel describing how to place waypoints
 
   Scenario: All objects data is displayed below buttons and status
     Given the simulation has 2 objects with different properties

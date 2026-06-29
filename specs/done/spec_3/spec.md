@@ -6,7 +6,7 @@ What to implement:
 1. On the left side, there shall be displayed all buttons that the user can
 use.
 1.2. The buttons shall be displayed the following order:
-    First:  Add Object
+    First:  Add Object (any help that describes the button shall show on the botton of the left side)
     Below: Edit Speed (only enabled when pushbutton is pressed)
     Third: Play button
     Four: Reset buttom

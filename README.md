@@ -35,7 +35,7 @@ docker run -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix object-movement-
 
 ## Tests
 
-139 tests, 91% coverage. See [`tests.md`](tests.md) for the full test suite documentation.
+144 tests, 91% coverage. See [`tests.md`](tests.md) for the full test suite documentation.
 
 ```bash
 .venv/bin/pytest --cov=.        # full suite with coverage

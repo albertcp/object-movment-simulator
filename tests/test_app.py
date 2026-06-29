@@ -56,6 +56,59 @@ class TestApp:
         app._handle_event(event)
         assert app._engine.state.paused is False
 
+    # ── Play button pause/resume tests ──────────────────────────────────
+
+    def test_play_button_starts_simulation(self, app: App) -> None:
+        """Clicking the play/pause button starts the simulation when stopped."""
+        assert app._engine.state.running is False
+        event = pygame.event.Event(pygame.MOUSEBUTTONDOWN, {"button": 1, "pos": (15, 120)})
+        app._handle_event(event)
+        assert app._engine.state.running is True
+
+    def test_play_button_pauses_simulation(self, app: App) -> None:
+        """Clicking the play/pause button pauses the simulation when running."""
+        app._engine.start()
+        assert app._engine.state.running is True
+        assert app._engine.state.paused is False
+        event = pygame.event.Event(pygame.MOUSEBUTTONDOWN, {"button": 1, "pos": (15, 120)})
+        app._handle_event(event)
+        assert app._engine.state.paused is True
+
+    def test_play_button_resumes_simulation(self, app: App) -> None:
+        """Clicking the play/pause button resumes when simulation is paused."""
+        app._engine.start()
+        app._engine.pause()
+        assert app._engine.state.paused is True
+        event = pygame.event.Event(pygame.MOUSEBUTTONDOWN, {"button": 1, "pos": (15, 120)})
+        app._handle_event(event)
+        assert app._engine.state.paused is False
+        assert app._engine.state.running is True
+
+    def test_no_movement_when_paused_via_play_button(self, app: App) -> None:
+        """No movement occurs while simulation is paused via play button."""
+        app._engine.start()
+        # Let it move briefly
+        app._engine.tick(0.5)
+        pos_before = app._engine.state.objects[0].current_position.x
+
+        # Pause via play button
+        event = pygame.event.Event(pygame.MOUSEBUTTONDOWN, {"button": 1, "pos": (15, 120)})
+        app._handle_event(event)
+        assert app._engine.state.paused is True
+
+        # Tick while paused — no movement
+        app._engine.tick(1.0)
+        assert app._engine.state.objects[0].current_position.x == pos_before
+
+    def test_reset_clears_pause_state(self, app: App) -> None:
+        """Reset clears the pause state."""
+        app._engine.start()
+        app._engine.pause()
+        assert app._engine.state.paused is True
+        app._engine.reset()
+        assert app._engine.state.paused is False
+        assert app._engine.state.running is False
+
     def test_handle_r_resets(self, app: App) -> None:
         app._engine.start()
         app._engine.tick(1.0)
