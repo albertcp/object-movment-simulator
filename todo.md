@@ -63,6 +63,10 @@
 - [x] Add `Simulator.py` launcher at project root
 - [x] Add `run.sh` bash launcher script at project root
 - [x] Add `Dockerfile` and `.dockerignore` for containerized execution
+- [x] Improve `Dockerfile`: pinned base image, Python env flags, X11 runtime libs, non-root user, cached dependency layer
+- [x] Add `docker-compose.yml` for one-command build/run on Linux and macOS
+- [x] Add `run-docker.sh` launcher that auto-detects Linux/macOS and prepares X11
+- [x] Verify image builds and the app starts (validated with Podman engine + dummy SDL driver)
 - [x] Rename `Contact` → `Object`, `ContactState` → `ObjectState` across all source and test files
 - [x] Spec 1 — "Add object" button can be pressed multiple times to add multiple objects (6 new tests, 101 total)
 - [x] Spec 2 — Edit object speed via a speed editing button and popup (32 new tests, 133 total)

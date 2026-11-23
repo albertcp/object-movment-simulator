@@ -12,8 +12,13 @@ Three-layer package structure:
 
 ## Setup
 
+- **All Python commands MUST run inside the project virtual environment (`.venv/`).**
+  Never use the system/global `python`, `pip`, `pytest`, `ruff`, `black`, or `mypy`.
+  Use the explicit interpreter path (`.venv/bin/python`) or activate the venv first.
+- Virtual environment location: `.venv/` at the repo root.
+- Create it only if missing: `python3 -m venv .venv`
+- Install dependencies into it: `.venv/bin/pip install -r requirements.txt`
 - Python 3.11+ (runs on 3.9+)
-- Virtual environment: `.venv/`
 - `from __future__ import annotations` required in all source files for 3.9 compatibility
 - pyproject.toml with ruff, black, mypy (strict), and pytest config
 
@@ -25,15 +30,24 @@ Three-layer package structure:
 
 ## Commands
 
+All commands below assume the repo root and run through `.venv/`.
+
 ```bash
-.venv/bin/pip install -r requirements.txt
-./run.sh                                     # run application (bash wrapper)
+python3 -m venv .venv                        # create venv (only if missing)
+.venv/bin/pip install -r requirements.txt    # install dependencies
+./run.sh                                     # run application (bash wrapper, uses .venv)
 .venv/bin/python Simulator.py                # run application
 .venv/bin/python -m controller.app           # alternative entry point
 docker build -t object-movement-sim . && docker run -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix object-movement-sim  # Docker
-.venv/bin/pytest --cov=.                      # test with coverage
+docker compose up --build                     # Docker via compose (Linux/macOS)
+./run-docker.sh                               # Docker launcher (auto-detects OS + X11)
+.venv/bin/pytest --cov=.                     # test with coverage
 .venv/bin/ruff check . && .venv/bin/black --check . && .venv/bin/mypy --strict .
 ```
+
+Do not call `python`, `pytest`, `ruff`, `black`, or `mypy` without the `.venv/bin/`
+prefix (or an activated `.venv`). If a tool is missing, install it into `.venv/`,
+never globally.
 
 ## Key files
 
@@ -50,6 +64,8 @@ docker build -t object-movement-sim . && docker run -e DISPLAY=$DISPLAY -v /tmp/
 | `logic/models.py` | Data models (Position, Path, Object) |
 | `adapter/` | Output adapters (JSON, file, console, network) |
 | `Dockerfile` | Container image for running the app |
+| `docker-compose.yml` | One-command build/run (Linux X11 and macOS XQuartz) |
+| `run-docker.sh` | Docker launcher that detects the host OS and sets up X11 |
 
 ## Rules
 The agent must follow the following rules on each task:
@@ -63,3 +79,6 @@ The agent must follow the following rules on each task:
 5.2. This `todo.md` file needs to be generated on the same folder. And these steps are mandatory
 5.3. After all `todo.md` tasks are finished, move spec_n folder into `done` folder.
 6. Please, request permission to installed any package or installed something
+7. Always run Python tooling from `.venv/` (e.g. `.venv/bin/python`, `.venv/bin/pytest`,
+   `.venv/bin/ruff`). Never use the global interpreter, and never install packages globally.
+   If `.venv/` is missing, create it first with `python3 -m venv .venv`.

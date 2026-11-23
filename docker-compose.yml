@@ -1,0 +1,16 @@
+# Run the simulator in Docker with a single command.
+#
+# Linux:  xhost +local:docker && docker compose up --build
+# macOS:  keep XQuartz open, then docker compose up --build
+#
+# The DISPLAY value is inherited from the shell on Linux (usually ":0") and
+# falls back to XQuartz over TCP on macOS, where $DISPLAY is normally unset.
+services:
+  simulator:
+    build:
+      context: .
+    image: object-movement-sim
+    environment:
+      DISPLAY: ${DISPLAY:-host.docker.internal:0}
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:ro
